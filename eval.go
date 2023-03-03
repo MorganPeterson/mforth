@@ -24,12 +24,13 @@ func NewEval() *Eval {
 	e := &Eval{tmp: Word{Name: ""},}
 	e.Dict = map[string]Word{
 		"+": {Name: "+", Func: e.add},
-		"-": {Name: "+", Func: e.sub},
-		"*": {Name: "+", Func: e.mul},
-		"/": {Name: "+", Func: e.div},
+		"-": {Name: "-", Func: e.sub},
+		"*": {Name: "*", Func: e.mul},
+		"/": {Name: "/", Func: e.div},
 		".": {Name: ".", Func: e.print},
 		":": {Name: ":", Func: e.startDefinition},
 		";": {Name: ";", Func: e.endDefinition},
+		"PRINT": {Name: "PRINT", e.print},
 		"DROP": {Name: "DROP", Func: e.drop},
 		"2DROP": {Name: "2DROP", Func: e.twoDrop},
 		"SWAP": {Name: "SWAP", Func: e.swap},
