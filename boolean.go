@@ -1,13 +1,11 @@
 package main
 
-import "math"
-
 var (
-	TT = float64(-1)
-	FF = float64(0)
+	TT = int64(-1)
+	FF = int64(0)
 )
 
-func If(cond bool) float64 {
+func If(cond bool) int64 {
 	if cond {
 		return TT
 	}
@@ -29,11 +27,8 @@ func (e *Eval) fand() {
 	if x == nil || y == nil {
 		return
 	}
-	xx := int64(math.Float64bits(*x))
-	yy := int64(math.Float64bits(*y))
 
-	z := yy & xx
-	e.Stack.Push(math.Float64frombits(uint64(z)))
+	e.Stack.Push(*y & *x)
 }
 
 func (e *Eval) fOr() {
@@ -43,11 +38,8 @@ func (e *Eval) fOr() {
 	if x == nil || y == nil {
 		return
 	}
-	xx := int64(math.Float64bits(*x))
-	yy := int64(math.Float64bits(*y))
 
-	z := yy | xx
-	e.Stack.Push(math.Float64frombits(uint64(z)))
+	e.Stack.Push(*y | *x)
 }
 
 func (e *Eval) fXor() {
@@ -57,11 +49,8 @@ func (e *Eval) fXor() {
 	if x == nil || y == nil {
 		return
 	}
-	xx := int64(math.Float64bits(*x))
-	yy := int64(math.Float64bits(*y))
 
-	z := yy ^ xx
-	e.Stack.Push(math.Float64frombits(uint64(z)))
+	e.Stack.Push(*y ^ *x)
 }
 
 func (e *Eval) invert() {
@@ -69,8 +58,7 @@ func (e *Eval) invert() {
 	if x == nil {
 		return
 	}
-	y := ^(int64(math.Float64bits(*x)))
-	e.Stack.Push(math.Float64frombits(uint64(y)))
+	e.Stack.Push(^(*x))
 }
 
 func (e *Eval) equal() {

@@ -13,8 +13,8 @@ type Word struct {
 }
 
 type Eval struct {
-	Stack Stack[float64]
-	RStack Stack[float64]
+	Stack Stack[int64]
+	RStack Stack[int64]
 	Dict map[string]Word
 	compiling bool
 	tmp Word
@@ -57,6 +57,16 @@ func NewEval() *Eval {
 		"OR": {Name: "OR", Func: e.fOr},
 		"XOR": {Name: "XOR", Func: e.fXor},
 		"INVERT": {Name: "INVERT", Func: e.invert},
+		"=": {Name: "=", Func: e.equal},
+		"<": {Name: "<", Func: e.lessThan},
+		">": {Name: ">", Func: e.greaterThan},
+		"<>": {Name: "<>", Func: e.notEqual},
+		"<=": {Name: "<=", Func: e.lessThanEqual},
+		">=": {Name: ">=", Func: e.greaterThanEqual},
+		"WITHIN": {Name: "WITHIN", Func: e.within},
+		"2*": {Name: "2*", Func: e.twoStar},
+		"2/": {Name: "2/", Func: e.twoSlash},
+		"MOD": {Name: "MOD", Func: e.mod},
 	}
 	return e
 }
@@ -89,7 +99,7 @@ func (e *Eval) Eval(args []string) {
 					e.tmp.Words = append(e.tmp.Words, val.Name)
 				} else {
 					e.tmp.Words = append(e.tmp.Words, "")
-					_, err := strconv.ParseFloat(tok, 64)
+					_, err := strconv.ParseInt(tok, 0, 64)
 					if err != nil {
 						fmt.Printf("%s: %s\n", tok, err.Error())
 						return
@@ -104,7 +114,7 @@ func (e *Eval) Eval(args []string) {
 		if prs {
 			e.evalWord(wrd)
 		} else {
-			i, err := strconv.ParseFloat(tok, 64)
+			i, err := strconv.ParseInt(tok, 0, 64)
 			if err != nil {
 				fmt.Printf("%s: %s\n", tok, err.Error())
 				return
@@ -126,7 +136,7 @@ func (e *Eval) evalWord(word Word) {
 		addNum := false
 		for _, offset := range word.Words {
 			if addNum {
-				n, err := strconv.ParseFloat(offset, 64)
+				n, err := strconv.ParseInt(offset, 0, 64)
 				if err == nil {
 					e.Stack.Push(n)
 					addNum = false

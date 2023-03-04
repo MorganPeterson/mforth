@@ -6,7 +6,7 @@ import (
 
 type Stack[T interface{}] struct {
 	items []T
-	length int
+	length int64
 }
 
 func (s *Stack[T]) IsEmpty() bool {
@@ -46,7 +46,7 @@ func (s *Stack[T]) Peek() *T {
 	return &(*s).items[i]
 }
 
-func (s *Stack[T]) Fetch(item int) *T {
+func (s *Stack[T]) Fetch(item int64) *T {
 	if s.IsEmpty() {
 		fmt.Printf("stack underflow\n")
 		return nil
@@ -62,7 +62,7 @@ func (s *Stack[T]) Fetch(item int) *T {
 func (e *Eval) print() {
 	x := e.Stack.Pop()
 	if x != nil {
-		fmt.Printf("%f\n", *x)
+		fmt.Printf("%d\n", *x)
 	}
 }
 
@@ -166,7 +166,7 @@ func (e *Eval) reverseRot() {
 }
 
 func (e *Eval) depth() {
-	e.Stack.Push(float64(e.Stack.length))
+	e.Stack.Push(e.Stack.length)
 }
 
 func (e *Eval) roll() {
@@ -183,7 +183,7 @@ func (e *Eval) roll() {
 	case 2:
 		e.rot()
 	default:
-		i := (*e).Stack.length - int(*x + 1)
+		i := (*e).Stack.length - (*x + 1)
 		y := e.Stack.items[i]
 		copy(e.Stack.items[i:], e.Stack.items[i+1:])
 		e.Stack.items[e.Stack.length-1] = y
