@@ -30,7 +30,7 @@ func NewEval() *Eval {
 		".": {Name: ".", Func: e.print},
 		":": {Name: ":", Func: e.startDefinition},
 		";": {Name: ";", Func: e.endDefinition},
-		"PRINT": {Name: "PRINT", e.print},
+		"PRINT": {Name: "PRINT", Func: e.print},
 		"DROP": {Name: "DROP", Func: e.drop},
 		"2DROP": {Name: "2DROP", Func: e.twoDrop},
 		"SWAP": {Name: "SWAP", Func: e.swap},
@@ -51,6 +51,12 @@ func NewEval() *Eval {
 		"2R>": {Name: "2R>", Func: e.twoFromR},
 		"2>R": {Name: "2>R", Func: e.twoToR},
 		"2R@": {Name: "2R@", Func: e.fetchTwoR},
+		"TRUE": {Name: "TRUE", Func: e.ftrue},
+		"FALSE": {Name: "FALSE", Func: e.ffalse},
+		"AND": {Name: "AND", Func: e.fand},
+		"OR": {Name: "OR", Func: e.fOr},
+		"XOR": {Name: "XOR", Func: e.fXor},
+		"INVERT": {Name: "INVERT", Func: e.invert},
 	}
 	return e
 }
@@ -141,4 +147,3 @@ func (e *Eval) evalWord(word Word) {
 		}
 	}
 }
-
