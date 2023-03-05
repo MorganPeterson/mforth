@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func (e *Eval) add() {
+func (e *Eval) plus() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
 
@@ -11,7 +11,7 @@ func (e *Eval) add() {
 	}
 }
 
-func (e *Eval) sub() {
+func (e *Eval) minus() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
 	if x.IsOk() && y.IsOk() {
@@ -19,7 +19,7 @@ func (e *Eval) sub() {
 	}
 }
 
-func (e *Eval) mul() {
+func (e *Eval) star() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
 	if x.IsOk() && y.IsOk() {
@@ -27,7 +27,7 @@ func (e *Eval) mul() {
 	}
 }
 
-func (e *Eval) div() {
+func (e *Eval) slash() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
 	if x.IsOk() && y.IsOk() {
@@ -68,3 +68,4 @@ func (e *Eval) twoSlash() {
 		e.Stack.Push(x.UnwrapVal() >> 1)
 	}
 }
+

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"strconv"
 )
@@ -18,15 +19,24 @@ type Eval struct {
 	Dict map[string]Word
 	compiling bool
 	tmp Word
+	maxUint uint64
+	maxInt int64
+	minInt int64
 }
 
 func NewEval() *Eval {
-	e := &Eval{tmp: Word{Name: ""},}
+	e := &Eval{
+		tmp: Word{Name: ""},
+		maxUint: math.MaxUint64,
+		maxInt: math.MaxInt64,
+		minInt: math.MinInt64,
+	}
+	
 	e.Dict = map[string]Word{
-		"+": {Name: "+", Func: e.add},
-		"-": {Name: "-", Func: e.sub},
-		"*": {Name: "*", Func: e.mul},
-		"/": {Name: "/", Func: e.div},
+		"+": {Name: "+", Func: e.plus},
+		"-": {Name: "-", Func: e.minus},
+		"*": {Name: "*", Func: e.star},
+		"/": {Name: "/", Func: e.slash},
 		".": {Name: ".", Func: e.dot},
 		":": {Name: ":", Func: e.startDefinition},
 		";": {Name: ";", Func: e.endDefinition},
@@ -66,6 +76,8 @@ func NewEval() *Eval {
 		"2*": {Name: "2*", Func: e.twoStar},
 		"2/": {Name: "2/", Func: e.twoSlash},
 		"MOD": {Name: "MOD", Func: e.mod},
+		"!": {Name: "!", Func: e.store},
+		"RSHIFT": {Name: "RSHIFT", Func: e.rShift},
 	}
 	return e
 }
@@ -148,7 +160,7 @@ func (e *Eval) evalWord(word Word) {
 					if p {
 						e.evalWord(f)
 					} else {
-						fmt.Printf("%s: %s not found\n", f)
+						fmt.Printf("%s: %s not found\n", offset, offset)
 						break
 					}
 				}
