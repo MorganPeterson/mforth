@@ -4,9 +4,13 @@ import (
 	"fmt"
 )
 
-type Stack[T interface{}] struct {
+var (
+	ErrStackUnderflow = "stack underflow"
+)
+
+type Stack[T any] struct {
 	items []T
-	length int64
+	length int64 `default:0`
 }
 
 func (s *Stack[T]) IsEmpty() bool {
@@ -18,10 +22,9 @@ func (s *Stack[T]) Push(x T) {
 	(*s).length++
 }
 
-func (s *Stack[T]) Pop() *T {
+func (s *Stack[T]) Pop() Result[T] {
 	if s.IsEmpty() {
-		fmt.Printf("stack underflow\n")
-		return nil
+		return Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
 
 	i := (*s).length - 1
@@ -29,41 +32,38 @@ func (s *Stack[T]) Pop() *T {
 	(*s).items = (*s).items[:i]
 	(*s).length--
 
-	return &x
+	return Ok[T](x)
 }
 
-func (s *Stack[T]) Peek() *T {
+func (s *Stack[T]) Peek() Result[T] {
 	if s.IsEmpty() {
-		fmt.Printf("stack underflow\n")
-		return nil
+		return Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
-
 	i := (*s).length - 1
 	if i < 0 {
-		fmt.Printf("stack underflow\n")
-		return nil
+		return Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
-	return &(*s).items[i]
+	return Ok[T]((*s).items[i])
 }
 
-func (s *Stack[T]) Fetch(item int64) *T {
+func (s *Stack[T]) Fetch(item int64) Result[T] {
 	if s.IsEmpty() {
-		fmt.Printf("stack underflow\n")
-		return nil
+		return Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
-	i := (*s).length - 2
+	i := (*s).length - item - 1
 	if i < 0 {
-		fmt.Printf("stack underflow\n")
-		return nil
+		return Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
-	return &(*s).items[(*s).length - 2]
+	return Ok[T]((*s).items[i])
 }	
 
-func (e *Eval) print() {
+func (e *Eval) dot() {
 	x := e.Stack.Pop()
-	if x != nil {
-		fmt.Printf("%d\n", *x)
+	if x.IsOk() {
+		fmt.Printf("%d\n", x.UnwrapVal())
+		return
 	}
+	fmt.Printf("%s\n", x.UnwrapErr())
 }
 
 func (e *Eval) drop() {
@@ -78,9 +78,10 @@ func (e *Eval) twoDrop() {
 func (e *Eval) swap() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
-	if x != nil && y != nil {
-		e.Stack.Push(*x)
-		e.Stack.Push(*y)
+
+	if x.IsOk() && y.IsOk() {
+		e.Stack.Push(x.UnwrapVal())
+		e.Stack.Push(y.UnwrapVal())
 	}
 }
 
@@ -89,56 +90,64 @@ func (e *Eval) twoSwap() {
 	w := e.Stack.Pop()
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
-	if v != nil && w != nil && x != nil && y != nil {
-		e.Stack.Push(*w)
-		e.Stack.Push(*v)
-		e.Stack.Push(*y)
-		e.Stack.Push(*x)
+	if v.IsOk() && w.IsOk() && x.IsOk() && y.IsOk() {
+		e.Stack.Push(w.UnwrapVal())
+		e.Stack.Push(v.UnwrapVal())
+		e.Stack.Push(y.UnwrapVal())
+		e.Stack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) dup() {
 	x := e.Stack.Peek()
-	if x != nil {
-		e.Stack.Push(*x)
+	if x.IsOk() {
+		e.Stack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) twoDup() {
 	x := e.Stack.Peek()
 	y := e.Stack.Fetch(2)
-	if x != nil && y != nil {
-		e.Stack.Push(*y)
-		e.Stack.Push(*x)
+	if x.IsOk() && y.IsOk() {
+		e.Stack.Push(y.UnwrapVal())
+		e.Stack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) nonZeroDup() {
 	x := e.Stack.Peek()
-	if x != nil && *x != 0 {
-		e.Stack.Push(*x)
+	if x.IsOk() {
+		xx := x.UnwrapVal()
+		if xx != 0 {
+			e.Stack.Push(xx)
+		}
 	}
 }
 
 func (e *Eval) over() {
 	x := e.Stack.Fetch(e.Stack.length - 2)
-	e.Stack.Push(*x)
+	if x.IsOk() {
+		e.Stack.Push(x.UnwrapVal())
+	}
 }
 
 func (e *Eval) twoOver() {
 	x := e.Stack.Fetch(3)
 	y := e.Stack.Fetch(4)
-	e.Stack.Push(*y)
-	e.Stack.Push(*x)
+
+	if x.IsOk() && y.IsOk() {
+		e.Stack.Push(y.UnwrapVal())
+		e.Stack.Push(x.UnwrapVal())
+	}
 }
 
 func (e *Eval) pick() {
 	x := e.Stack.Pop()
-	if x != nil {
-		*x++
-		y := e.Stack.Fetch(e.Stack.length - 2)
-		if y != nil {
-			e.Stack.Push(*y)
+	if x.IsOk() {
+		xx := x.UnwrapVal() + 1
+		y := e.Stack.Fetch(e.Stack.length - xx)
+		if y.IsOk() {
+			e.Stack.Push(y.UnwrapVal())
 		}
 	}
 }
@@ -147,10 +156,10 @@ func (e *Eval) rot() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
 	z := e.Stack.Pop()
-	if x != nil && y != nil && z != nil {
-		e.Stack.Push(*y)
-		e.Stack.Push(*x)
-		e.Stack.Push(*z)
+	if x.IsOk() && y.IsOk() && z.IsOk() {
+		e.Stack.Push(y.UnwrapVal())
+		e.Stack.Push(x.UnwrapVal())
+		e.Stack.Push(z.UnwrapVal())
 	}
 }
 
@@ -158,10 +167,10 @@ func (e *Eval) reverseRot() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
 	z := e.Stack.Pop()
-	if x != nil && y != nil && z != nil {
-		e.Stack.Push(*x)
-		e.Stack.Push(*z)
-		e.Stack.Push(*y)
+	if x.IsOk() && y.IsOk() && z.IsOk() {
+		e.Stack.Push(x.UnwrapVal())
+		e.Stack.Push(z.UnwrapVal())
+		e.Stack.Push(y.UnwrapVal())
 	}
 }
 
@@ -171,22 +180,22 @@ func (e *Eval) depth() {
 
 func (e *Eval) roll() {
 	x := e.Stack.Pop()
-	if x == nil {
-		return
-	}
 
-	switch *x {
-	case 0:
-		return
-	case 1:
-		e.swap()
-	case 2:
-		e.rot()
-	default:
-		i := (*e).Stack.length - (*x + 1)
-		y := e.Stack.items[i]
-		copy(e.Stack.items[i:], e.Stack.items[i+1:])
-		e.Stack.items[e.Stack.length-1] = y
+	if x.IsOk() {
+		xx := x.UnwrapVal()
+		switch xx {
+		case 0:
+			return
+		case 1:
+			e.swap()
+		case 2:
+			e.rot()
+		default:
+			i := e.Stack.length - (xx + 1)
+			y := e.Stack.items[i]
+			copy(e.Stack.items[i:], e.Stack.items[i+1:])
+			e.Stack.items[e.Stack.length-1] = y
+		}
 	}
 }
 
@@ -196,48 +205,48 @@ func (e *Eval) roll() {
 
 func (e *Eval) toR() {
 	x := e.Stack.Pop()
-	if x != nil {
-		e.RStack.Push(*x)
+	if x.IsOk() {
+		e.RStack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) fromR() {
 	x := e.RStack.Pop()
-	if x != nil {
-		e.Stack.Push(*x)
+	if x.IsOk() {
+		e.Stack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) fetchR() {
 	x := e.RStack.Peek()
-	if x != nil {
-		e.Stack.Push(*x)
+	if x.IsOk() {
+		e.Stack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) twoToR() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()
-	if x != nil && y != nil {
-		e.RStack.Push(*y)
-		e.RStack.Push(*x)
+	if x.IsOk() && y.IsOk() {
+		e.RStack.Push(y.UnwrapVal())
+		e.RStack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) twoFromR() {
 	x := e.RStack.Pop()
 	y := e.RStack.Pop()
-	if x != nil && y != nil {
-		e.Stack.Push(*y)
-		e.Stack.Push(*x)
+	if x.IsOk() && y.IsOk() {
+		e.Stack.Push(y.UnwrapVal())
+		e.Stack.Push(x.UnwrapVal())
 	}
 }
 
 func (e *Eval) fetchTwoR() {
 	x := e.RStack.Fetch(2)
 	y := e.RStack.Peek()
-	if x != nil && y != nil {
-		e.Stack.Push(*x)
-		e.Stack.Push(*y)
+	if x.IsOk() && y.IsOk() {
+		e.Stack.Push(x.UnwrapVal())
+		e.Stack.Push(y.UnwrapVal())
 	}
 }
