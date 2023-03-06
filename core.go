@@ -10,6 +10,10 @@ func (e *Eval) endDefinition() {
 	e.compiling = false
 }
 
+func (e *Eval) leftParen() {
+	e.comment++
+}
+
 func (e *Eval) store() {
 	x := e.Stack.Pop()
 	y := e.Stack.Pop()

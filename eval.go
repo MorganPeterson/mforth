@@ -22,6 +22,7 @@ type Eval struct {
 	maxUint uint
 	maxInt int
 	minInt int
+	comment int
 }
 
 func NewEval() *Eval {
@@ -80,6 +81,7 @@ func NewEval() *Eval {
 		"!": {Name: "!", Func: e.store},
 		"+!": {Name: "+!", Func: e.plusStore},
 		"RSHIFT": {Name: "RSHIFT", Func: e.rShift},
+		"(": {Name: "(", Func: e.leftParen},
 	}
 	return e
 }
@@ -87,10 +89,22 @@ func NewEval() *Eval {
 func (e *Eval) Eval(args []string) {
 	for _, tok := range args {
 		tok = strings.TrimSpace(tok)
+		
 		if tok == "" {
 			continue
 		}
 
+		if tok == "\\" {
+			break
+		}
+
+		if e.comment > 0 {
+			if tok == ")" {
+				e.comment--
+			}
+			continue
+		}
+			
 		if e.compiling {
 			if tok == ";" {
 				word, _ := e.findWord(tok)
