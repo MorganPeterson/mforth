@@ -10,7 +10,7 @@ var (
 
 type Stack[T any] struct {
 	items []T
-	length int64 `default:0`
+	length int `default:0`
 }
 
 func (s *Stack[T]) IsEmpty() bool {
@@ -46,7 +46,7 @@ func (s *Stack[T]) Peek() Result[T] {
 	return Ok[T]((*s).items[i])
 }
 
-func (s *Stack[T]) Fetch(item int64) Result[T] {
+func (s *Stack[T]) Fetch(item int) Result[T] {
 	if s.IsEmpty() {
 		return Error[T](fmt.Errorf(ErrStackUnderflow))
 	}

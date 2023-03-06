@@ -14,22 +14,22 @@ type Word struct {
 }
 
 type Eval struct {
-	Stack Stack[int64]
-	RStack Stack[int64]
+	Stack Stack[int]
+	RStack Stack[int]
 	Dict map[string]Word
 	compiling bool
 	tmp Word
-	maxUint uint64
-	maxInt int64
-	minInt int64
+	maxUint uint
+	maxInt int
+	minInt int
 }
 
 func NewEval() *Eval {
 	e := &Eval{
 		tmp: Word{Name: ""},
-		maxUint: math.MaxUint64,
-		maxInt: math.MaxInt64,
-		minInt: math.MinInt64,
+		maxUint: math.MaxUint,
+		maxInt: math.MaxInt,
+		minInt: math.MinInt,
 	}
 	
 	e.Dict = map[string]Word{
@@ -76,7 +76,9 @@ func NewEval() *Eval {
 		"2*": {Name: "2*", Func: e.twoStar},
 		"2/": {Name: "2/", Func: e.twoSlash},
 		"MOD": {Name: "MOD", Func: e.mod},
+		"*/MOD": {Name: "*/MOD", Func: e.starSlashMod},
 		"!": {Name: "!", Func: e.store},
+		"+!": {Name: "+!", Func: e.plusStore},
 		"RSHIFT": {Name: "RSHIFT", Func: e.rShift},
 	}
 	return e
@@ -125,7 +127,7 @@ func (e *Eval) Eval(args []string) {
 		if prs {
 			e.evalWord(wrd)
 		} else {
-			i, err := strconv.ParseInt(tok, 0, 64)
+			i, err := strconv.Atoi(tok)
 			if err != nil {
 				fmt.Printf("%s: %s\n", tok, err.Error())
 				return
@@ -147,7 +149,7 @@ func (e *Eval) evalWord(word Word) {
 		addNum := false
 		for _, offset := range word.Words {
 			if addNum {
-				n, err := strconv.ParseInt(offset, 0, 64)
+				n, err := strconv.Atoi(offset)
 				if err == nil {
 					e.Stack.Push(n)
 					addNum = false

@@ -8,7 +8,7 @@ import (
 
 var LogMsg = "Value %d given. Should be %d"
 
-func expectedVal(t *testing.T, x Result[int64], expectedVal int64, log bytes.Buffer) {
+func expectedVal(t *testing.T, x Result[int], expectedVal int, log bytes.Buffer) {
 	if !x.IsOk() {
 		t.Fatalf(`Result not ok`)
 	}
@@ -19,12 +19,12 @@ func expectedVal(t *testing.T, x Result[int64], expectedVal int64, log bytes.Buf
 }
 
 func TestPlus(t *testing.T) {
-	var a Result[int64]
+	var a Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()
 	logger := log.New(&buf, "TestPlus: ", log.Lshortfile)
-	midUint := int64(e.maxUint / 2)
+	midUint := int(e.maxUint / 2)
 
 	e.Stack.Push(0)
 	e.Stack.Push(5)
@@ -98,12 +98,12 @@ func TestPlus(t *testing.T) {
 }
 
 func TestMinus(t *testing.T) {
-	var a Result[int64]
+	var a Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()
 	logger := log.New(&buf, "TestMinus: ", log.Lshortfile)
-	midUint := int64(e.maxUint / 2)
+	midUint := int(e.maxUint / 2)
 
 	e.Stack.Push(0)
 	e.Stack.Push(5)
@@ -177,12 +177,12 @@ func TestMinus(t *testing.T) {
 }
 
 func TestStar(t *testing.T) {
-	var a Result[int64]
+	var a Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()
 	logger := log.New(&buf, "TestStar: ", log.Lshortfile)
-	midUint := int64(e.maxUint / 2)
+	midUint := int(e.maxUint / 2)
 	
 	e.Stack.Push(0)
 	e.Stack.Push(0)
@@ -278,7 +278,7 @@ func TestStar(t *testing.T) {
 }
 
 func TestSlash(t *testing.T) {
-	var a Result[int64]
+	var a Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestSlash: ", log.Lshortfile)
@@ -404,7 +404,7 @@ func TestSlash(t *testing.T) {
 }
 
 func TestMod(t *testing.T) {
-	var a Result[int64]
+	var a Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestMod: ", log.Lshortfile)
@@ -496,7 +496,7 @@ func TestMod(t *testing.T) {
 }
 
 func TestTwoStar(t *testing.T) {
-	var a Result[int64]
+	var a Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestTwoStar: ", log.Lshortfile)
@@ -526,4 +526,67 @@ func TestTwoStar(t *testing.T) {
 	a = e.Stack.Pop()
 	logger.Printf(LogMsg, a.UnwrapVal(), 3)
 	expectedVal(t, a, 3, buf)
+}
+
+func TestTwoSlash(t *testing.T) {
+	var a Result[int]
+	var buf bytes.Buffer
+	e := NewEval()
+	logger := log.New(&buf, "TestTwoSlash: ", log.Lshortfile)
+
+	e.Stack.Push(0)
+	e.twoSlash()
+	a = e.Stack.Pop()
+	logger.Printf(LogMsg, a.UnwrapVal(), 0)
+	expectedVal(t, a, 0, buf)
+
+	e.Stack.Push(1)
+	e.twoSlash()
+	a = e.Stack.Pop()
+	logger.Printf(LogMsg, a.UnwrapVal(), 0)
+	expectedVal(t, a, 0, buf)
+
+	e.Stack.Push(4000)
+	e.twoSlash()
+	a = e.Stack.Pop()
+	logger.Printf(LogMsg, a.UnwrapVal(), 2000)
+	expectedVal(t, a, 2000, buf)
+
+	e.Stack.Push(1)
+	e.Stack.Push(1)
+	e.fXor()
+	e.twoSlash()
+	a = e.Stack.Pop()
+	logger.Printf(LogMsg, a.UnwrapVal(), 0)
+	expectedVal(t, a, 0, buf)
+}
+
+func TestStarSlashMod(t *testing.T) {
+	var a Result[int]
+	var b Result[int]
+	var buf bytes.Buffer
+	e := NewEval()
+	logger := log.New(&buf, "TestStarSlashMod: ", log.Lshortfile)
+
+	e.Stack.Push(0)
+	e.Stack.Push(2)
+	e.Stack.Push(1)
+	e.starSlashMod()
+	a = e.Stack.Pop()
+	b = e.Stack.Pop()
+	logger.Printf(LogMsg, a.UnwrapVal(), 0)
+	expectedVal(t, a, 0, buf)
+	logger.Printf(LogMsg, b.UnwrapVal(), 0)
+	expectedVal(t, b, 0, buf)
+
+	e.Stack.Push(1)
+	e.Stack.Push(2)
+	e.Stack.Push(1)
+	e.starSlashMod()
+	a = e.Stack.Pop()
+	b = e.Stack.Pop()
+	logger.Printf(LogMsg, a.UnwrapVal(), 2)
+	expectedVal(t, a, 2, buf)
+	logger.Printf(LogMsg, b.UnwrapVal(), 0)
+	expectedVal(t, b, 0, buf)
 }

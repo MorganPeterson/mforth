@@ -1,11 +1,11 @@
 package main
 
 var (
-	TT = int64(-1)
-	FF = int64(0)
+	TT = -1
+	FF = 0
 )
 
-func If(cond bool) int64 {
+func If(cond bool) int {
 	if cond {
 		return TT
 	}

@@ -69,3 +69,28 @@ func (e *Eval) twoSlash() {
 	}
 }
 
+func (e *Eval) starSlashMod() {
+	x := e.Stack.Pop()
+	y := e.Stack.Pop()
+	z := e.Stack.Pop()
+
+	if x.IsOk() && y.IsOk() && z.IsOk() {
+		xx := x.UnwrapVal()
+		if xx == 0 {
+			return
+		}
+		a := z.UnwrapVal() * y.UnwrapVal()
+		e.Stack.Push(a % xx)
+		e.Stack.Push(a / xx)
+	}
+}
+
+func (e *Eval) plusStore() {
+	x := e.Stack.Pop()
+	y := e.Stack.Pop()
+	
+	if x.IsOk() && y.IsOk() {
+		e.Stack.Push(y.UnwrapVal() + x.UnwrapVal())
+	}
+}
+		

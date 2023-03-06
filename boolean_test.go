@@ -7,7 +7,7 @@ import (
 )
 
 func TestFXor(t *testing.T) {
-	var a Result[int64]
+	var a Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()
