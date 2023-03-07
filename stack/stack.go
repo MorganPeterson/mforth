@@ -1,7 +1,9 @@
-package utils
+package stack
 
 import (
 	"fmt"
+
+	"github.com/MorganPeterson/mForth/result"
 )
 
 var (
@@ -22,9 +24,9 @@ func (s *Stack[T]) Push(x T) {
 	(*s).length++
 }
 
-func (s *Stack[T]) Pop() Result[T] {
+func (s *Stack[T]) Pop() result.Result[T] {
 	if s.IsEmpty() {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
+		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
 
 	i := (*s).length - 1
@@ -32,29 +34,29 @@ func (s *Stack[T]) Pop() Result[T] {
 	(*s).items = (*s).items[:i]
 	(*s).length--
 
-	return Ok[T](x)
+	return result.Ok[T](x)
 }
 
-func (s *Stack[T]) Peek() Result[T] {
+func (s *Stack[T]) Peek() result.Result[T] {
 	if s.IsEmpty() {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
+		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
 	i := (*s).length - 1
 	if i < 0 {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
+		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
-	return Ok[T]((*s).items[i])
+	return result.Ok[T]((*s).items[i])
 }
 
-func (s *Stack[T]) Fetch(item int) Result[T] {
+func (s *Stack[T]) Fetch(item int) result.Result[T] {
 	if s.IsEmpty() {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
+		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
 	i := (*s).length - item - 1
 	if i < 0 {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
+		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
 	}
-	return Ok[T]((*s).items[i])
+	return result.Ok[T]((*s).items[i])
 }	
 
 func (s *Stack[T]) Len() int {

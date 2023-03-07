@@ -6,18 +6,18 @@ import (
 	"strings"
 	"strconv"
 
-	"github.com/MorganPeterson/mForth/utils"
+	"github.com/MorganPeterson/mForth/stack"
 )
 
 type Word struct {
 	Name string
-	Func func()
+	Func func() error
 	Words []string
 }
 
 type Eval struct {
-	Stack utils.Stack[int]
-	RStack utils.Stack[int]
+	Stack stack.Stack[int]
+	RStack stack.Stack[int]
 	Dict map[string]Word
 	compiling bool
 	tmp Word
@@ -159,8 +159,13 @@ func (e *Eval) findWord(name string) (Word, bool) {
 }
 
 func (e *Eval) evalWord(word Word) {
+	var fResult error
+	
 	if word.Func != nil {
-		word.Func()
+		fResult = word.Func()
+		if fResult != nil  {
+			fmt.Printf("Eval: %s: %s\n", fResult.Error(), word.Name)
+		}
 	} else {
 		addNum := false
 		for _, offset := range word.Words {

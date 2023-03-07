@@ -1,98 +1,149 @@
 package core
 
 import (
-	"fmt"
+	"errors"
 )
 
-func (e *Eval) plus() {
+func (e *Eval) plus() error {
 	x := e.Stack.Pop()
-	y := e.Stack.Pop()
-
-	if x.IsOk() && y.IsOk() {
-		e.Stack.Push(y.UnwrapVal() + x.UnwrapVal())
+	if !x.IsOk() {
+		return x.UnwrapErr()
 	}
-}
-
-func (e *Eval) minus() {
-	x := e.Stack.Pop()
-	y := e.Stack.Pop()
-	if x.IsOk() && y.IsOk() {
-		e.Stack.Push(y.UnwrapVal() - x.UnwrapVal())
-	}
-}
-
-func (e *Eval) star() {
-	x := e.Stack.Pop()
-	y := e.Stack.Pop()
-	if x.IsOk() && y.IsOk() {
-		e.Stack.Push(y.UnwrapVal() * x.UnwrapVal())
-	}
-}
-
-func (e *Eval) slash() {
-	x := e.Stack.Pop()
-	y := e.Stack.Pop()
-	if x.IsOk() && y.IsOk() {
-		xx := x.UnwrapVal()
-		if xx == 0 {
-			fmt.Printf("/: zero division error\n")
-			return
-		}
-		e.Stack.Push(y.UnwrapVal() / xx)
-	}
-}
-
-func (e *Eval) mod() {
-	x := e.Stack.Pop()
-	y := e.Stack.Pop()
-	if x.IsOk() || y.IsOk() {
-		xx := x.UnwrapVal()
-		if xx == 0 {
-			fmt.Printf("MOD: zero division error\n")
-			return
-		}
-		e.Stack.Push(y.UnwrapVal() % xx)
-	}
-}
-
-func (e *Eval) twoStar() {
-	x := e.Stack.Pop()
-
-	if x.IsOk() {
-		e.Stack.Push(x.UnwrapVal() << 1)
-	}
-}
-
-func (e *Eval) twoSlash() {
-	x := e.Stack.Pop()
-
-	if x.IsOk() {
-		e.Stack.Push(x.UnwrapVal() >> 1)
-	}
-}
-
-func (e *Eval) starSlashMod() {
-	x := e.Stack.Pop()
-	y := e.Stack.Pop()
-	z := e.Stack.Pop()
-
-	if x.IsOk() && y.IsOk() && z.IsOk() {
-		xx := x.UnwrapVal()
-		if xx == 0 {
-			return
-		}
-		a := z.UnwrapVal() * y.UnwrapVal()
-		e.Stack.Push(a % xx)
-		e.Stack.Push(a / xx)
-	}
-}
-
-func (e *Eval) plusStore() {
-	x := e.Stack.Pop()
-	y := e.Stack.Pop()
 	
-	if x.IsOk() && y.IsOk() {
-		e.Stack.Push(y.UnwrapVal() + x.UnwrapVal())
+	y := e.Stack.Pop()
+	if !y.IsOk() {
+		return y.UnwrapErr()
 	}
+
+	e.Stack.Push(y.UnwrapVal() + x.UnwrapVal())
+	return nil
+}
+
+func (e *Eval) minus() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+	
+	y := e.Stack.Pop()
+	if !y.IsOk() {
+		return y.UnwrapErr()
+	}
+
+	e.Stack.Push(y.UnwrapVal() - x.UnwrapVal())
+	return nil
+}
+
+func (e *Eval) star() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+	
+	y := e.Stack.Pop()
+	if !y.IsOk() {
+		return y.UnwrapErr()
+	}
+
+	e.Stack.Push(y.UnwrapVal() * x.UnwrapVal())
+	return nil
+}
+
+func (e *Eval) slash() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+	
+	y := e.Stack.Pop()
+	if !y.IsOk() {
+		return y.UnwrapErr()
+	}
+
+	xx := x.UnwrapVal()
+	if xx == 0 {
+		return errors.New("SLASH: zero division error")
+	}
+	e.Stack.Push(y.UnwrapVal() / xx)
+	return nil
+}
+
+func (e *Eval) mod() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+	
+	y := e.Stack.Pop()
+	if !y.IsOk() {
+		return y.UnwrapErr()
+	}
+
+	xx := x.UnwrapVal()
+	if xx == 0 {
+		return errors.New("SLASH: zero division error")
+	}
+
+	e.Stack.Push(y.UnwrapVal() % xx)
+	return nil
+}
+
+func (e *Eval) twoStar() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+
+	e.Stack.Push(x.UnwrapVal() << 1)
+	return nil
+}
+
+func (e *Eval) twoSlash() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+
+	e.Stack.Push(x.UnwrapVal() >> 1)
+	return nil
+}
+
+func (e *Eval) starSlashMod() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+	y := e.Stack.Pop()
+	if !y.IsOk() {
+		return y.UnwrapErr()
+	}
+	z := e.Stack.Pop()
+	if !z.IsOk() {
+		return z.UnwrapErr()
+	}
+
+	xx := x.UnwrapVal()
+	if xx == 0 {
+		return errors.New("STARSLASHMOD: zero division error")
+	}
+	a := z.UnwrapVal() * y.UnwrapVal()
+	e.Stack.Push(a % xx)
+	e.Stack.Push(a / xx)
+
+	return nil
+}
+
+func (e *Eval) plusStore() error {
+	x := e.Stack.Pop()
+	if !x.IsOk() {
+		return x.UnwrapErr()
+	}
+	y := e.Stack.Pop()
+	if !y.IsOk() {
+		return y.UnwrapErr()
+	}
+	
+	e.Stack.Push(y.UnwrapVal() + x.UnwrapVal())
+	return nil
 }
 		
