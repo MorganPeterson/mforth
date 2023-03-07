@@ -1,61 +1,17 @@
-package main
+package core
 
-import (
-	"fmt"
-)
+import "fmt"
 
-var (
-	ErrStackUnderflow = "stack underflow"
-)
-
-type Stack[T any] struct {
-	items []T
-	length int `default:0`
+func (e *Eval) startDefinition() {
+	e.compiling = true
 }
 
-func (s *Stack[T]) IsEmpty() bool {
-	return (*s).length == 0
+func (e *Eval) endDefinition() {
+	e.Dict[e.tmp.Name] = e.tmp
+	e.tmp = Word{Name: ""}
+	e.compiling = false
 }
 
-func (s *Stack[T]) Push(x T) {
-	(*s).items = append((*s).items, x)
-	(*s).length++
-}
-
-func (s *Stack[T]) Pop() Result[T] {
-	if s.IsEmpty() {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
-	}
-
-	i := (*s).length - 1
-	x := (*s).items[i]
-	(*s).items = (*s).items[:i]
-	(*s).length--
-
-	return Ok[T](x)
-}
-
-func (s *Stack[T]) Peek() Result[T] {
-	if s.IsEmpty() {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
-	}
-	i := (*s).length - 1
-	if i < 0 {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
-	}
-	return Ok[T]((*s).items[i])
-}
-
-func (s *Stack[T]) Fetch(item int) Result[T] {
-	if s.IsEmpty() {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
-	}
-	i := (*s).length - item - 1
-	if i < 0 {
-		return Error[T](fmt.Errorf(ErrStackUnderflow))
-	}
-	return Ok[T]((*s).items[i])
-}	
 
 func (e *Eval) dot() {
 	x := e.Stack.Pop()
@@ -125,7 +81,7 @@ func (e *Eval) nonZeroDup() {
 }
 
 func (e *Eval) over() {
-	x := e.Stack.Fetch(e.Stack.length - 2)
+	x := e.Stack.Fetch(e.Stack.Len() - 2)
 	if x.IsOk() {
 		e.Stack.Push(x.UnwrapVal())
 	}
@@ -145,7 +101,7 @@ func (e *Eval) pick() {
 	x := e.Stack.Pop()
 	if x.IsOk() {
 		xx := x.UnwrapVal() + 1
-		y := e.Stack.Fetch(e.Stack.length - xx)
+		y := e.Stack.Fetch(e.Stack.Len() - xx)
 		if y.IsOk() {
 			e.Stack.Push(y.UnwrapVal())
 		}
@@ -175,7 +131,7 @@ func (e *Eval) reverseRot() {
 }
 
 func (e *Eval) depth() {
-	e.Stack.Push(e.Stack.length)
+	e.Stack.Push(e.Stack.Len())
 }
 
 func (e *Eval) roll() {
@@ -191,10 +147,10 @@ func (e *Eval) roll() {
 		case 2:
 			e.rot()
 		default:
-			i := e.Stack.length - (xx + 1)
-			y := e.Stack.items[i]
-			copy(e.Stack.items[i:], e.Stack.items[i+1:])
-			e.Stack.items[e.Stack.length-1] = y
+			i := e.Stack.Len() - (xx + 1)
+			y := e.Stack.PeekAt(i)
+			e.Stack.Rm(i)
+			e.Stack.Insert(e.Stack.Len()-1, y)
 		}
 	}
 }
@@ -248,5 +204,31 @@ func (e *Eval) fetchTwoR() {
 	if x.IsOk() && y.IsOk() {
 		e.Stack.Push(x.UnwrapVal())
 		e.Stack.Push(y.UnwrapVal())
+	}
+}
+
+func (e *Eval) leftParen() {
+	e.comment++
+}
+
+func (e *Eval) store() {
+	x := e.Stack.Pop()
+	y := e.Stack.Pop()
+
+	if x.IsOk() && y.IsOk() {
+		xx := x.UnwrapVal()
+		if xx < 0 {
+			panic("!: STORE: Illegal attempt to change input")
+		}
+		e.Stack.Insert(xx, y.UnwrapVal())
+	}
+}
+
+func (e *Eval) rShift() {
+	x := e.Stack.Pop()
+	y := e.Stack.Pop()
+
+	if x.IsOk() && y.IsOk() {
+		e.Stack.Push(y.UnwrapVal() >> x.UnwrapVal())
 	}
 }

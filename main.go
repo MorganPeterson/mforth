@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/MorganPeterson/mForth/core"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	forth := NewEval()
+	forth := core.NewEval()
 
 	for {
 		fmt.Printf("> ")

@@ -1,4 +1,4 @@
-package main
+package core
 
 var (
 	TT = -1

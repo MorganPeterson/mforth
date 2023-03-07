@@ -1,10 +1,12 @@
-package main
+package core
 
 import (
 	"fmt"
 	"math"
 	"strings"
 	"strconv"
+
+	"github.com/MorganPeterson/mForth/utils"
 )
 
 type Word struct {
@@ -14,8 +16,8 @@ type Word struct {
 }
 
 type Eval struct {
-	Stack Stack[int]
-	RStack Stack[int]
+	Stack utils.Stack[int]
+	RStack utils.Stack[int]
 	Dict map[string]Word
 	compiling bool
 	tmp Word

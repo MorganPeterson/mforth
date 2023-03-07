@@ -1,6 +1,8 @@
-package main
+package core
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (e *Eval) plus() {
 	x := e.Stack.Pop()

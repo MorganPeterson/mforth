@@ -1,4 +1,4 @@
-package main
+package utils
 
 type Result[T any] struct {
 	ok T
