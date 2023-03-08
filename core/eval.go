@@ -76,6 +76,8 @@ func NewEval() *Eval {
 		"<=": {Name: "<=", Func: e.lessThanEqual},
 		">=": {Name: ">=", Func: e.greaterThanEqual},
 		"WITHIN": {Name: "WITHIN", Func: e.within},
+		"0<": {Name: "0<", Func: e.zeroLess},
+		"0=": {Name: "0=", Func: e.zeroEquals},
 		"2*": {Name: "2*", Func: e.twoStar},
 		"2/": {Name: "2/", Func: e.twoSlash},
 		"MOD": {Name: "MOD", Func: e.mod},

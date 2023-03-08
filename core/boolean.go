@@ -105,7 +105,7 @@ func (e *Eval) invert() error {
 		return x.UnwrapErr()
 	}
 
-	e.Stack.Push(^(x.UnwrapVal()))
+	e.Stack.Push(^x.UnwrapVal())
 	return nil
 }
 
@@ -290,4 +290,22 @@ func (e *Eval) within() error {
 	y := If(l < u && l <= v && v < u || l > u && (l <= v || v < u))
 	e.Stack.Push(y)
 	return nil
+}
+
+func (e *Eval) zeroLess() error {
+	x := e.Stack.Pop()
+	if x.IsOk() {
+		e.Stack.Push(If(x.UnwrapVal() < 0))
+		return nil
+	}
+	return x.UnwrapErr()
+}
+
+func (e *Eval) zeroEquals() error {
+	x := e.Stack.Pop()
+	if x.IsOk() {
+		e.Stack.Push(If(x.UnwrapVal() == 0))
+		return nil
+	}
+	return x.UnwrapErr()
 }
