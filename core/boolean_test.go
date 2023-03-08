@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"log"
 	"testing"
+
+	"github.com/MorganPeterson/mForth/result"
 )
 
 func TestFXor(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()

@@ -3,13 +3,16 @@ package core
 import (
 	"errors"
 	"fmt"
+	"sync"
 )
 
+// colon starts a word definition
 func (e *Eval) startDefinition() error {
 	e.compiling = true
 	return nil
 }
 
+// semicolon ends a word definition
 func (e *Eval) endDefinition() error {
 	e.Dict[e.tmp.Name] = e.tmp
 	e.tmp = Word{Name: ""}
@@ -36,27 +39,44 @@ func (e *Eval) drop() error {
 }
 
 func (e *Eval) twoDrop() error {
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
 	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
 	
 	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
-	}
-	return nil
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	return isErr
 }
 
 func (e *Eval) swap() error {
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
 	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
 	
 	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	e.Stack.Push(x.UnwrapVal())
@@ -65,24 +85,32 @@ func (e *Eval) swap() error {
 }
 
 func (e *Eval) twoSwap() error {
+	err := make(chan error, 4)
+	done := sync.WaitGroup{}
+	
 	v := e.Stack.Pop()
-	if !v.IsOk() {
-		return v.UnwrapErr()
-	}
+	done.Add(1)
+	go checkIsOk[int](&done, err, &v)
 
 	w := e.Stack.Pop()
-	if !w.IsOk() {
-		return w.UnwrapErr()
-	}
+	done.Add(1)
+	go checkIsOk[int](&done, err, &w)
 
 	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
 
 	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	e.Stack.Push(w.UnwrapVal())
@@ -104,14 +132,24 @@ func (e *Eval) dup() error {
 }
 
 func (e *Eval) twoDup() error {
-	x := e.Stack.Peek()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
+	x := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
+	
+	y := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
 
-	y := e.Stack.Fetch(2)
-	if !y.IsOk() {
-		return y.UnwrapErr()
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	e.Stack.Push(y.UnwrapVal())
@@ -143,16 +181,26 @@ func (e *Eval) over() error {
 }
 
 func (e *Eval) twoOver() error {
-	x := e.Stack.Fetch(3)
-	if !x.IsOk() {
-		return x.UnwrapErr()
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
+	x := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
+	
+	y := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
-	y := e.Stack.Fetch(4)
-	if !y.IsOk() {
-		return x.UnwrapErr()
-	}
-	
 	e.Stack.Push(y.UnwrapVal())
 	e.Stack.Push(x.UnwrapVal())
 	return nil
@@ -173,19 +221,28 @@ func (e *Eval) pick() error {
 }
 
 func (e *Eval) rot() error {
+	err := make(chan error, 3)
+	done := sync.WaitGroup{}
+	
 	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
 	
 	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
-	}
-	
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
 	z := e.Stack.Pop()
-	if !z.IsOk() {
-		return z.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &z)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	e.Stack.Push(y.UnwrapVal())
@@ -195,19 +252,28 @@ func (e *Eval) rot() error {
 }
 
 func (e *Eval) reverseRot() error {
-	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
-
-	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
-	}
+	err := make(chan error, 3)
+	done := sync.WaitGroup{}
 	
+	x := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
+	
+	y := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
 	z := e.Stack.Pop()
-	if !z.IsOk() {
-		return z.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &z)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	e.Stack.Push(x.UnwrapVal())
@@ -282,29 +348,50 @@ func (e *Eval) fetchR() error {
 }
 
 func (e *Eval) twoToR() error {
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
 	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
+	
+	y := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
-	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
-	}
 	e.RStack.Push(y.UnwrapVal())
 	e.RStack.Push(x.UnwrapVal())
 	return nil
 }
 
 func (e *Eval) twoFromR() error {
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
 	x := e.RStack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
 	
 	y := e.RStack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	e.Stack.Push(y.UnwrapVal())
@@ -313,14 +400,24 @@ func (e *Eval) twoFromR() error {
 }
 
 func (e *Eval) fetchTwoR() error {
-	x := e.RStack.Fetch(2)
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
+	x := e.RStack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
+	
+	y := e.RStack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
 
-	y := e.RStack.Peek()
-	if !y.IsOk() {
-		return y.UnwrapErr()
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	e.Stack.Push(x.UnwrapVal())
@@ -334,14 +431,24 @@ func (e *Eval) leftParen() error {
 }
 
 func (e *Eval) store() error {
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
 	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
-	}
-
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
+	
 	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
 	xx := x.UnwrapVal()
@@ -354,15 +461,26 @@ func (e *Eval) store() error {
 }
 
 func (e *Eval) rShift() error {
+	err := make(chan error, 2)
+	done := sync.WaitGroup{}
+	
 	x := e.Stack.Pop()
-	if !x.IsOk() {
-		return x.UnwrapErr()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &x)
+	
+	y := e.Stack.Pop()
+	done.Add(1)
+	go checkIsOk[int](&done, err, &y)
+
+	done.Wait()
+
+	isErr := <-err
+	close(err)
+
+	if isErr != nil {
+		return isErr
 	}
 
-	y := e.Stack.Pop()
-	if !y.IsOk() {
-		return y.UnwrapErr()
-	}
 	e.Stack.Push(y.UnwrapVal() >> x.UnwrapVal())
 	return nil
 }

@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"log"
 	"testing"
+
+	"github.com/MorganPeterson/mForth/result"
 )
 
 var LogMsg = "Value %d given. Should be %d"
 
-func expectedVal(t *testing.T, x Result[int], expectedVal int, log bytes.Buffer) {
+func expectedVal(t *testing.T, x result.Result[int], expectedVal int, log bytes.Buffer) {
 	if !x.IsOk() {
-		t.Fatalf(`Result not ok`)
+		t.Fatalf(`result.Result not ok`)
 	}
 
 	if x.UnwrapVal() != expectedVal {
@@ -19,7 +21,7 @@ func expectedVal(t *testing.T, x Result[int], expectedVal int, log bytes.Buffer)
 }
 
 func TestPlus(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()
@@ -98,7 +100,7 @@ func TestPlus(t *testing.T) {
 }
 
 func TestMinus(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()
@@ -177,7 +179,7 @@ func TestMinus(t *testing.T) {
 }
 
 func TestStar(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 
 	e := NewEval()
@@ -278,7 +280,7 @@ func TestStar(t *testing.T) {
 }
 
 func TestSlash(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestSlash: ", log.Lshortfile)
@@ -404,7 +406,7 @@ func TestSlash(t *testing.T) {
 }
 
 func TestMod(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestMod: ", log.Lshortfile)
@@ -496,7 +498,7 @@ func TestMod(t *testing.T) {
 }
 
 func TestTwoStar(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestTwoStar: ", log.Lshortfile)
@@ -529,7 +531,7 @@ func TestTwoStar(t *testing.T) {
 }
 
 func TestTwoSlash(t *testing.T) {
-	var a Result[int]
+	var a result.Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestTwoSlash: ", log.Lshortfile)
@@ -562,8 +564,8 @@ func TestTwoSlash(t *testing.T) {
 }
 
 func TestStarSlashMod(t *testing.T) {
-	var a Result[int]
-	var b Result[int]
+	var a result.Result[int]
+	var b result.Result[int]
 	var buf bytes.Buffer
 	e := NewEval()
 	logger := log.New(&buf, "TestStarSlashMod: ", log.Lshortfile)
