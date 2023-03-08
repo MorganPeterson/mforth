@@ -16,6 +16,7 @@ type Word struct {
 }
 
 type Eval struct {
+	FStack stack.Stack[float32]
 	Stack stack.Stack[int]
 	RStack stack.Stack[int]
 	Dict map[string]Word
@@ -37,7 +38,9 @@ func NewEval() *Eval {
 	
 	e.Dict = map[string]Word{
 		"+": {Name: "+", Func: e.plus},
+		"1+": {Name: "1+", Func: e.onePlus},
 		"-": {Name: "-", Func: e.minus},
+		"1-": {Name: "1-", Func: e.oneMinus},
 		"*": {Name: "*", Func: e.star},
 		"/": {Name: "/", Func: e.slash},
 		".": {Name: ".", Func: e.dot},
@@ -49,12 +52,11 @@ func NewEval() *Eval {
 		"2SWAP": {Name: "2SWAP", Func: e.twoSwap},
 		"DUP": {Name: "DUP", Func: e.dup},
 		"2DUP": {Name: "2DUP", Func: e.twoDup},
-		"?DUP": {Name: "?DUP", Func: e.nonZeroDup},
+		"?DUP": {Name: "?DUP", Func: e.questionDup},
 		"OVER": {Name: "OVER", Func: e.over},
 		"2OVER": {Name: "2OVER", Func: e.twoOver},
 		"PICK": {Name: "PICK", Func: e.pick},
 		"ROT": {Name: "ROT", Func: e.rot},
-		"-ROT": {Name: "-ROT", Func: e.reverseRot},
 		"ROLL": {Name: "ROLL", Func: e.roll},
 		"DEPTH": {Name: "DEPTH", Func: e.depth},
 		">R": {Name: ">R", Func: e.toR},
@@ -62,6 +64,8 @@ func NewEval() *Eval {
 		"R@": {Name: "R@", Func: e.fetchR},
 		"2R>": {Name: "2R>", Func: e.twoFromR},
 		"2>R": {Name: "2>R", Func: e.twoToR},
+		"@": {Name: "@", Func: e.fetch},
+		"2@": {Name: "2@", Func: e.twoFetch},
 		"2R@": {Name: "2R@", Func: e.fetchTwoR},
 		"TRUE": {Name: "TRUE", Func: e.ftrue},
 		"FALSE": {Name: "FALSE", Func: e.ffalse},
@@ -73,8 +77,6 @@ func NewEval() *Eval {
 		"<": {Name: "<", Func: e.lessThan},
 		">": {Name: ">", Func: e.greaterThan},
 		"<>": {Name: "<>", Func: e.notEqual},
-		"<=": {Name: "<=", Func: e.lessThanEqual},
-		">=": {Name: ">=", Func: e.greaterThanEqual},
 		"WITHIN": {Name: "WITHIN", Func: e.within},
 		"0<": {Name: "0<", Func: e.zeroLess},
 		"0=": {Name: "0=", Func: e.zeroEquals},
@@ -83,7 +85,6 @@ func NewEval() *Eval {
 		"MOD": {Name: "MOD", Func: e.mod},
 		"*/MOD": {Name: "*/MOD", Func: e.starSlashMod},
 		"!": {Name: "!", Func: e.store},
-		"+!": {Name: "+!", Func: e.plusStore},
 		"RSHIFT": {Name: "RSHIFT", Func: e.rShift},
 		"(": {Name: "(", Func: e.leftParen},
 	}

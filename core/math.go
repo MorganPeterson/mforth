@@ -19,11 +19,11 @@ func checkIsOk[T any](wg *sync.WaitGroup, err chan error, x *result.Result[T]) {
 func (e *Eval) plus() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -44,11 +44,11 @@ func (e *Eval) plus() error {
 func (e *Eval) minus() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -69,11 +69,11 @@ func (e *Eval) minus() error {
 func (e *Eval) star() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -94,11 +94,11 @@ func (e *Eval) star() error {
 func (e *Eval) slash() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -123,11 +123,11 @@ func (e *Eval) slash() error {
 func (e *Eval) mod() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -173,11 +173,11 @@ func (e *Eval) twoSlash() error {
 func (e *Eval) starSlashMod() error {
 	err := make(chan error, 3)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -206,28 +206,22 @@ func (e *Eval) starSlashMod() error {
 	return nil
 }
 
-func (e *Eval) plusStore() error {
-	err := make(chan error, 2)
-	done := sync.WaitGroup{}
-	
+func (e *Eval) onePlus() error {
 	x := e.Stack.Pop()
-	done.Add(1)
-	go checkIsOk[int](&done, err, &x)
-	
-	y := e.Stack.Pop()
-	done.Add(1)
-	go checkIsOk[int](&done, err, &y)
 
-	done.Wait()
-
-	isErr := <-err
-	close(err)
-
-	if isErr != nil {
-		return isErr
+	if x.IsOk() {
+		e.Stack.Push(x.UnwrapVal() + 1)
 	}
 
-	e.Stack.Push(y.UnwrapVal() + x.UnwrapVal())
-	return nil
+	return x.UnwrapErr()
 }
-		
+
+func (e *Eval) oneMinus() error {
+	x := e.Stack.Pop()
+
+	if x.IsOk() {
+		e.Stack.Push(x.UnwrapVal() - 1)
+	}
+
+	return x.UnwrapErr()
+}

@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrStackUnderflow = "stack underflow"
+	ErrStackOverflow = "stack overflow"
 )
 
 type Stack[T any] struct {
@@ -48,17 +49,6 @@ func (s *Stack[T]) Peek() result.Result[T] {
 	return result.Ok[T]((*s).items[i])
 }
 
-func (s *Stack[T]) Fetch(item int) result.Result[T] {
-	if s.IsEmpty() {
-		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
-	}
-	i := (*s).length - item - 1
-	if i < 0 {
-		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
-	}
-	return result.Ok[T]((*s).items[i])
-}	
-
 func (s *Stack[T]) Len() int {
 	return s.length
 }
@@ -71,6 +61,19 @@ func (s *Stack[T]) Rm(index int) {
 	copy(s.items[index:], s.items[index+1:])
 }
 
-func (s *Stack[T]) PeekAt(index int) T {
-	return (*s).items[index]
+func (s *Stack[T]) PeekAt(index int) result.Result[T] {
+	if s.IsEmpty() {
+		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
+	}
+
+	i := (*s).length - index - 1
+
+	switch {
+	case i < 0:
+		return result.Error[T](fmt.Errorf(ErrStackUnderflow))
+	case i >= s.length:
+		return result.Error[T](fmt.Errorf(ErrStackOverflow))
+	default:
+		return result.Ok((*s).items[index])
+	}
 }

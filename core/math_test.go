@@ -592,3 +592,55 @@ func TestStarSlashMod(t *testing.T) {
 	logger.Printf(LogMsg, b.UnwrapVal(), 0)
 	expectedVal(t, b, 0, buf)
 }
+
+func TestOnePlus(t *testing.T) {
+	var a result.Result[int]
+	var buf bytes.Buffer
+	
+	e := NewEval()
+	logger := log.New(&buf, "TestOnePlus: ", log.Lshortfile)
+	midUint := int(e.maxUint / 2)
+
+	e.Stack.Push(0)
+	e.onePlus()
+	e.Stack.Push(-1)
+	e.onePlus()
+	e.Stack.Push(1)
+	e.onePlus()
+	e.Stack.Push(midUint)
+	e.onePlus()
+
+	x := []int{midUint + 1, 2, 0, 1}
+
+	for _, v := range x {
+		a = e.Stack.Pop()
+		logger.Printf(LogMsg, a.UnwrapVal(), v)
+		expectedVal(t, a, v, buf)
+	}
+}
+
+func TestOneMinus(t *testing.T) {
+	var a result.Result[int]
+	var buf bytes.Buffer
+	
+	e := NewEval()
+	logger := log.New(&buf, "TestOneMinus: ", log.Lshortfile)
+	midUint := int(e.maxUint / 2)
+
+	e.Stack.Push(2)
+	e.oneMinus()
+	e.Stack.Push(1)
+	e.oneMinus()
+	e.Stack.Push(0)
+	e.oneMinus()
+	e.Stack.Push(midUint + 1)
+	e.oneMinus()
+
+	x := []int{midUint, -1, 0, 1}
+
+	for _, v := range x {
+		a = e.Stack.Pop()
+		logger.Printf(LogMsg, a.UnwrapVal(), v)
+		expectedVal(t, a, v, buf)
+	}
+}

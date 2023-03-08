@@ -27,11 +27,11 @@ func (e *Eval) ffalse() error {
 func (e *Eval) fand() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -52,11 +52,11 @@ func (e *Eval) fand() error {
 func (e *Eval) fOr() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -77,11 +77,11 @@ func (e *Eval) fOr() error {
 func (e *Eval) fXor() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -112,11 +112,11 @@ func (e *Eval) invert() error {
 func (e *Eval) equal() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -137,11 +137,11 @@ func (e *Eval) equal() error {
 func (e *Eval) notEqual() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -162,11 +162,11 @@ func (e *Eval) notEqual() error {
 func (e *Eval) lessThan() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -187,11 +187,11 @@ func (e *Eval) lessThan() error {
 func (e *Eval) greaterThan() error {
 	err := make(chan error, 2)
 	done := sync.WaitGroup{}
-	
+
 	x := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &x)
-	
+
 	y := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &y)
@@ -209,60 +209,10 @@ func (e *Eval) greaterThan() error {
 	return nil
 }
 
-func (e *Eval) lessThanEqual() error {
-	err := make(chan error, 2)
-	done := sync.WaitGroup{}
-	
-	x := e.Stack.Pop()
-	done.Add(1)
-	go checkIsOk[int](&done, err, &x)
-	
-	y := e.Stack.Pop()
-	done.Add(1)
-	go checkIsOk[int](&done, err, &y)
-
-	done.Wait()
-
-	isErr := <-err
-	close(err)
-
-	if isErr != nil {
-		return isErr
-	}
-
-	e.Stack.Push(If(y.UnwrapVal() <= x.UnwrapVal()))
-	return nil
-}
-
-func (e *Eval) greaterThanEqual() error {
-	err := make(chan error, 2)
-	done := sync.WaitGroup{}
-	
-	x := e.Stack.Pop()
-	done.Add(1)
-	go checkIsOk[int](&done, err, &x)
-	
-	y := e.Stack.Pop()
-	done.Add(1)
-	go checkIsOk[int](&done, err, &y)
-
-	done.Wait()
-
-	isErr := <-err
-	close(err)
-
-	if isErr != nil {
-		return isErr
-	}
-
-	e.Stack.Push(If(y.UnwrapVal() >= x.UnwrapVal()))
-	return nil
-}
-
 func (e *Eval) within() error {
 	err := make(chan error, 3)
 	done := sync.WaitGroup{}
-	
+
 	upper := e.Stack.Pop()
 	done.Add(1)
 	go checkIsOk[int](&done, err, &upper)
@@ -283,7 +233,7 @@ func (e *Eval) within() error {
 	if isErr != nil {
 		return isErr
 	}
-	
+
 	u := upper.UnwrapVal()
 	l := lower.UnwrapVal()
 	v := val.UnwrapVal()
